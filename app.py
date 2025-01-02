@@ -1,12 +1,12 @@
 import requests
 import json
 import streamlit as st
-# Load environment variables
-load_dotenv()
+
+# Hardcoded credentials
 BASE_API_URL = "https://api.langflow.astra.datastax.com"
-LANGFLOW_ID = "fa896a7b-dc3e-44f3-92ed-0c8ae4ca55cd"
-FLOW_ID = "81a3643c-a3cc-4538-be28-3503515fc62d"
-APPLICATION_TOKEN = "AstraCS:QIOIhpArKNjwaArImSMMhTBH:c44d2ec0177f40c6dc8eacff2fcde2316203ec6cb6daa2557b914ffbaccfecf5"
+LANGFLOW_ID = "04c10269-3dde-497c-b20f-9ecb31f155db"
+FLOW_ID = "aed37c10-7ac1-4cf5-9fcd-7c08fb469135"
+APPLICATION_TOKEN = "AstraCS:QIOIhpArKNjwaArImSMMhTBH:c44d2ec0177f40c6dc8eacff2fcde2316203ec6cb6daa2557b914ffbaccfecf5"  # Hardcoded token
 ENDPOINT = "analysis"
 
 # Function to run the flow
