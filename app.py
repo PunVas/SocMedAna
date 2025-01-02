@@ -4,7 +4,7 @@ import streamlit as st
 
 # Hardcoded credentials
 BASE_API_URL = "https://api.groq.ai/v1/query"  # Modify with Groq's endpoint
-APPLICATION_TOKEN = "AstraCS:QIOIhpArKNjwaArImSMMhTBH:c44d2ec0177f40c6dc8eacff2fcde2316203ec6cb6daa2557b914ffbaccfecf5"  # Hardcoded token
+APPLICATION_TOKEN = ""  # Hardcoded token
 
 # Function to run the flow with Groq AI
 def run_flow(message: str) -> dict:
