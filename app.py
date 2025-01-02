@@ -1,80 +1,60 @@
-import streamlit as st
 import requests
 import json
-from typing import Optional
-
-# Constants for API request
+import streamlit as st
+# Load environment variables
+load_dotenv()
 BASE_API_URL = "https://api.langflow.astra.datastax.com"
-LANGFLOW_ID = "04c10269-3dde-497c-b20f-9ecb31f155db"
-FLOW_ID = "aed37c10-7ac1-4cf5-9fcd-7c08fb469135"
+LANGFLOW_ID = "fa896a7b-dc3e-44f3-92ed-0c8ae4ca55cd"
+FLOW_ID = "81a3643c-a3cc-4538-be28-3503515fc62d"
 APPLICATION_TOKEN = "AstraCS:QIOIhpArKNjwaArImSMMhTBH:c44d2ec0177f40c6dc8eacff2fcde2316203ec6cb6daa2557b914ffbaccfecf5"
-ENDPOINT = ""  # You can set a specific endpoint name in the flow settings
+ENDPOINT = "analysis"
 
-# Optional tweaks
-TWEAKS = {
-    "ChatInput-n0p3k": {},
-    "Prompt-qJyGE": {},
-    "AstraDBToolComponent-2bEY8": {},
-    "Agent-XtCvF": {},
-    "ChatOutput-g0GbU": {}
-}
-
-def run_flow(message: str,
-             endpoint: str,
-             output_type: str = "chat",
-             input_type: str = "chat",
-             tweaks: Optional[dict] = None,
-             application_token: Optional[str] = None) -> dict:
-    """
-    Run a flow with a given message and optional tweaks.
-
-    :param message: The message to send to the flow
-    :param endpoint: The ID or the endpoint name of the flow
-    :param tweaks: Optional tweaks to customize the flow
-    :return: The JSON response from the flow
-    """
-    api_url = f"{BASE_API_URL}/lf/{LANGFLOW_ID}/api/v1/run/{endpoint}"
-
+# Function to run the flow
+def run_flow(message: str) -> dict:
+    api_url = f"{BASE_API_URL}/lf/{LANGFLOW_ID}/api/v1/run/{ENDPOINT}"
     payload = {
         "input_value": message,
-        "output_type": output_type,
-        "input_type": input_type,
+        "output_type": "chat",
+        "input_type": "chat",
     }
-    headers = None
-    if tweaks:
-        payload["tweaks"] = tweaks
-    if application_token:
-        headers = {"Authorization": "Bearer " + application_token, "Content-Type": "application/json"}
+    headers = {"Authorization": "Bearer " + APPLICATION_TOKEN, "Content-Type": "application/json"}
     response = requests.post(api_url, json=payload, headers=headers)
     return response.json()
 
+# Main function
 def main():
-    st.title("AI Chatbot")
+    st.title("Social Media Performance Analysis")
 
-    # Input text area for user message
-    user_message = st.text_area("You: ", "", height=150)
+    # Initialize session state for chat history
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = []
 
-    # Button to send message
-    if st.button("Send"):
-        if user_message:
-            with st.spinner('Getting response from AI...'):
-                response = run_flow(
-                    message=user_message,
-                    endpoint=ENDPOINT or FLOW_ID,
-                    output_type="chat",
-                    input_type="chat",
-                    tweaks=TWEAKS,
-                    application_token=APPLICATION_TOKEN
-                )
+    # Input field for the user
+    message = st.text_area("", placeholder="How can we assist you today?")
 
-            # Display the AI response
-            if 'response' in response:
-                ai_message = response['response']
-                st.text_area("AI: ", ai_message, height=150, disabled=True)
-            else:
-                st.error("Error: Could not get a valid response.")
-        else:
-            st.warning("Please enter a message to send.")
+    # Button to send the query
+    if st.button("Generate Insights"):
+        if not message.strip():
+            st.error("Please enter a message")
+            return
+
+        try:
+            with st.spinner("Running flow..."):
+                response = run_flow(message)
+                response_text = response["outputs"][0]["outputs"][0]["results"]["message"]["text"]
+
+            # Append user message and response to chat history
+            st.session_state["messages"].append({"user": message, "bot": response_text})
+
+        except Exception as e:
+            st.error(str(e))
+
+    # Display chat history
+    st.subheader("Chat History")
+    for chat in st.session_state["messages"]:
+        st.markdown(f"**You:** {chat['user']}")
+        st.markdown(f"**Bot:** {chat['bot']}")
+        st.divider()  # Adds a divider for better readability
 
 if __name__ == "__main__":
     main()
