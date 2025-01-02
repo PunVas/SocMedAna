@@ -36,7 +36,7 @@ def main():
         st.session_state["messages"] = []
 
     # Input field for the user
-    message = st.text_area("", placeholder="How can we assist you today?")
+    message = st.text_area("Your Message", placeholder="How can we assist you today?")
 
     # Button to send the query
     if st.button("Generate Insights"):
