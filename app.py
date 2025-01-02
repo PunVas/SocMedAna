@@ -3,25 +3,31 @@ import json
 import streamlit as st
 
 # Hardcoded credentials
-BASE_API_URL = "https://api.langflow.astra.datastax.com"
-LANGFLOW_ID = "04c10269-3dde-497c-b20f-9ecb31f155db"
-FLOW_ID = "aed37c10-7ac1-4cf5-9fcd-7c08fb469135"
+BASE_API_URL = "https://api.groq.ai/v1/query"  # Modify with Groq's endpoint
 APPLICATION_TOKEN = "AstraCS:QIOIhpArKNjwaArImSMMhTBH:c44d2ec0177f40c6dc8eacff2fcde2316203ec6cb6daa2557b914ffbaccfecf5"  # Hardcoded token
-ENDPOINT = "analysis"
 
-# Function to run the flow
+# Function to run the flow with Groq AI
 def run_flow(message: str) -> dict:
-    api_url = f"{BASE_API_URL}/lf/{LANGFLOW_ID}/api/v1/run/{ENDPOINT}"
+    api_url = BASE_API_URL  # Groq AI API endpoint
     payload = {
-        "input_value": message,
-        "output_type": "chat",
-        "input_type": "chat",
+        "query": message,  # Adjust the payload if Groq AI uses different parameters
     }
-    headers = {"Authorization": "Bearer " + APPLICATION_TOKEN, "Content-Type": "application/json"}
-    response = requests.post(api_url, json=payload, headers=headers)
-    return response.json()
+    headers = {
+        "Authorization": "Bearer " + APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        # Sending the POST request to the Groq API
+        response = requests.post(api_url, json=payload, headers=headers)
+        # Check if the response is successful
+        response.raise_for_status()  # Will raise an exception for 4xx or 5xx errors
+        return response.json()  # Assuming Groq returns a JSON response
+    except requests.exceptions.RequestException as e:
+        # Handle any exception that occurs during the request
+        return {"error": str(e)}
 
-# Main function
+# Main function for Streamlit interface
 def main():
     st.title("Social Media Performance Analysis")
 
@@ -41,7 +47,11 @@ def main():
         try:
             with st.spinner("Running flow..."):
                 response = run_flow(message)
-                response_text = response["outputs"][0]["outputs"][0]["results"]["message"]["text"]
+                # Check for any error in the response
+                if 'error' in response:
+                    st.error(f"Error: {response['error']}")
+                else:
+                    response_text = response.get("response", "No response received.")  # Adjust based on Groq's response format
 
             # Append user message and response to chat history
             st.session_state["messages"].append({"user": message, "bot": response_text})
